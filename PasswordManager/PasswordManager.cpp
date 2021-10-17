@@ -191,6 +191,7 @@ int PasswordManager::collatzEncrypt(int n) {
 		n = (n % 2 == 0) ? n / 2 : 3 * n + 1;
 		steps++;
 	}
+	cout << "hello " << endl;
 	return steps;
 }
 
