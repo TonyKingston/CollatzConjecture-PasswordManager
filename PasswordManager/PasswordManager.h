@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <map>
+#include <vector>
 
 using namespace std;
 
@@ -16,7 +17,7 @@ public:
 	void analyseFile();
 	string encryptPassword(unsigned char* pwd);
 	int collatzEncrypt(int n);
-	map<int, int> createCollatzMap();
+	map<int, vector<int>> createCollatzMap();
 
 
 private:

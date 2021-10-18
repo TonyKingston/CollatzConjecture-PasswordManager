@@ -12,6 +12,7 @@
 #include <map>
 
 
+
 using namespace std;
 
 //map<int, int> collatzMap;
@@ -41,7 +42,7 @@ PasswordManager::~PasswordManager()
 }
 
 void PasswordManager::start() {
-	map<int, int> collatzMap = createCollatzMap();
+	map<int, vector<int>> collatzMap = createCollatzMap();
 	string username;
 	string password;
 	string encryptedPassword;
@@ -191,16 +192,23 @@ int PasswordManager::collatzEncrypt(int n) {
 		n = (n % 2 == 0) ? n / 2 : 3 * n + 1;
 		steps++;
 	}
-	cout << "hello " << endl;
 	return steps;
 }
 
-map<int, int> PasswordManager::createCollatzMap() {
-	map<int, int> map;
-	//	unsigned char* c = new unsigned char[2];
+map<int, vector<int> > PasswordManager::createCollatzMap() {
+	map<int, vector<int>> map;
 	for (int i = 1; i < 128; i++) {
 		//	c[0] = i;
-		map.insert({ i, collatzEncrypt(i) });
+		int steps = collatzEncrypt(i);
+		auto it = map.find(steps);
+		if (it == map.end()) {
+			vector<int> numbers;
+			numbers.push_back(i);
+			map.insert({ steps, numbers });
+		}
+		else {
+			map[it->first].push_back(i);
+		}
 	}
 	return map;
 }
