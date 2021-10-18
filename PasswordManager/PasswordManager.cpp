@@ -185,10 +185,10 @@ void PasswordManager::analyseFile() {
 				// Find first valid substring of password
 				int sublength = 1;
 				string sub = line.substr(0, sublength);
-				while (auto it{ collatzMap.find(stoi(sub)) }; it != end(m)) {
+			//	while (auto it{ collatzMap.find(stoi(sub)) }; it != end(m)) {
 					sublength++;
 					sub = line.substr(0, sublength);
-				}
+			//	}
 				//collatzMap.find(stoi(sub)) == collatzMap.end()
 				//if (auto it{ m.find("key") }; it != std::end(m))
 
