@@ -21,6 +21,6 @@ public:
 
 
 private:
-
+	map<int, vector<int>> collatzMap;
 };
 

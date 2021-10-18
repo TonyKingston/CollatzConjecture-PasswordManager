@@ -42,12 +42,16 @@ PasswordManager::~PasswordManager()
 }
 
 void PasswordManager::start() {
-	map<int, vector<int>> collatzMap = createCollatzMap();
+	collatzMap = createCollatzMap();
 	string username;
 	string password;
 	string encryptedPassword;
 	unsigned char* arr;
 	int option;
+
+	/*for (auto it = collatzMap.begin(); it != collatzMap.end(); ++it) {
+		cout << *max_element(begin(it->second), end(it->second)) << endl;
+	}*/
 
 	cout << "Please select an option from the following:\n" << endl;
 	cout << "1. Create username/password" << endl;
@@ -127,8 +131,8 @@ bool PasswordManager::generateFile() {
 	int length = 1;
 	int count = 0;
 	if (file.is_open()) {
-		for (int i = 0; i < 100; i++) {
-			for (int j = 0; j < 100; j++) {
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
 				unsigned char* str = new unsigned char[length + 1];
 				//shared_ptr<unsigned char> str(new unsigned char[length]);
 
@@ -162,11 +166,55 @@ void PasswordManager::analyseFile() {
 	string line;
 	ifstream file("passwordtest.txt");
 	int length = 1;
-	int count = 0;
-	while (getline(file, line)) {
-		cout << line;
+	int crackCount = 0;
+	unsigned char* guess;
+	int offset;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			guess = new unsigned char[length + 1];
+			guess[length] = '\0';
+			offset = 0;
+			getline(file, line);
+			if (length == 1) {
+				if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) {
+					crackCount++;
+				}
+			}
+			else {
 
+				// Find first valid substring of password
+				int sublength = 1;
+				string sub = line.substr(0, sublength);
+				while (auto it{ collatzMap.find(stoi(sub)) }; it != end(m)) {
+					sublength++;
+					sub = line.substr(0, sublength);
+				}
+				//collatzMap.find(stoi(sub)) == collatzMap.end()
+				//if (auto it{ m.find("key") }; it != std::end(m))
+
+			/*	if (it == map.end()) {
+					vector<int> numbers;
+					numbers.push_back(i);
+					map.insert({ steps, numbers });
+				}
+				else {
+					map[it->first].push_back(i);
+				}*/
+
+				offset = *guess;
+				
+
+				cout << guess << endl;
+					//to_string(collatzEncrypt(collatzMap[stoi(line.substr(0, 1))][0]));
+
+			}
+			
+		}
+		length++;
 	}
+	delete[] guess;
+	cout << "No. of password cracked: " << crackCount << endl;
+	
 }
 
 string PasswordManager::encryptPassword(unsigned char* pwd) {
@@ -197,8 +245,7 @@ int PasswordManager::collatzEncrypt(int n) {
 
 map<int, vector<int> > PasswordManager::createCollatzMap() {
 	map<int, vector<int>> map;
-	for (int i = 1; i < 128; i++) {
-		//	c[0] = i;
+	for (int i = 32; i < 128; i++) {
 		int steps = collatzEncrypt(i);
 		auto it = map.find(steps);
 		if (it == map.end()) {
