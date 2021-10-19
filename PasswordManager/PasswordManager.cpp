@@ -11,13 +11,7 @@
 #include <fcntl.h>
 #include <map>
 
-
-
 using namespace std;
-
-//map<int, int> collatzMap;
-
-
 
 template<typename Iter, typename RandomGenerator>
 Iter random_select(Iter start, Iter end, RandomGenerator& g) {
@@ -116,7 +110,7 @@ bool PasswordManager::checkUser(string username, string password) {
 			if (password == line)
 				return true;*/
 	}
-	return 0;
+	return 0;	
 }
 
 bool PasswordManager::generateFile() {
