@@ -190,7 +190,7 @@ bool PasswordManager::generateFile() {
 	return true;
 }
 
-void PasswordManager::analyseFile() {
+/*void PasswordManager::analyseFile() {
 	string line;
 	ifstream file("passwordtest.txt");
 	int length = 1;
@@ -220,37 +220,17 @@ void PasswordManager::analyseFile() {
 				int steps = 0;
 				int substringCount = 0;
 				int totalChars = 0;
-				vector<string> subs;
 				string previousSub;
 				//for (int totalChars = 0; totalChars < line.length();) {
-				while (totalChars < line.length()) {
-					sublength = 1;
-					string sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
-					sublength = sub.length();
-					auto it = collatzMap.find(stoi(sub));
-					if ((totalChars + sublength) <= line.length()) {
-						while (collatzMap.find(stoi(sub)) == collatzMap.end() && (totalChars + sublength) <= line.length()) {
-							sublength++;
-							sub = line.substr(totalChars, sublength);
-							it = collatzMap.find(stoi(sub));
-						}
-						subs.emplace_back(sub);
-						steps = it->first;
-						substringCount++;
-						totalChars += sub.length();
-						int d = it->second[0] - offset;
-						*guess = it->second[0] - offset;
-						guess++;
-						offset = steps;
-					}
-					previousSub = sub;
+				for (int s = 0; s < line.length(); s++) {
+					cout << line[s] << endl;
 				}
 			}
 		}
 		delete[] guess;
 		length++;
 	}
-}
+}*/
 
 void PasswordManager::analyseFile() {
 	string line;
