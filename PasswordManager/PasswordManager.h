@@ -12,11 +12,12 @@ public:
 	~PasswordManager();
 	void start();
 	void createUser(string username, string password);
-	bool checkUser(string username);
+	vector<string> checkUser(string username);
+	vector<string> split(string line, char delim= ' ');
 	bool generateFile();
 	void analyseFile();
 	string encryptPassword(unsigned char* pwd);
-	int collatzEncrypt(int n);
+	inline int collatzEncrypt(int n);
 	map<int, vector<int>> createCollatzMap();
 
 

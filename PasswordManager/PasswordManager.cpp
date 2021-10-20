@@ -10,6 +10,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <map>
+#include <sstream>
 
 using namespace std;
 
@@ -41,6 +42,7 @@ void PasswordManager::start() {
 	string password;
 	string encryptedPassword;
 	unsigned char* arr;
+	vector<string> user;
 	int option;
 
 	/*for (auto it = collatzMap.begin(); it != collatzMap.end(); ++it) {
@@ -75,21 +77,34 @@ void PasswordManager::start() {
 		cout << "Please enter a username" << endl;
 		cin.ignore();
 		getline(cin, username);
-		/*cout << "Please enter a password" << endl;
-		cin >> password;
-		arr = new unsigned char[password.length() + 1];
-		strcpy_s((char*)arr, password.length() + 1, password.c_str());
-		encryptedPassword = encryptPassword(arr);*/
-		if (checkUser(username)) {
-			int attempts;
+		username.erase(remove(username.begin(), username.end(), ' '), username.end());
+		user = checkUser(username);
+		if (user.size() == 2) {
+			int attempts = 3;
+			while (attempts > 0) {
+				cout << "Please enter a password" << endl;
+				getline(cin, password);
+				arr = new unsigned char[password.length() + 1];
+				strcpy_s((char*)arr, password.length() + 1, password.c_str());
+				if (encryptPassword(arr) == user[1]) {
+					cout << "Success. User confirmed.";
+					break;
+				}
+				delete[] arr;
+				attempts--;
+				cout << attempts << " attempts left." << endl;
+			}
+			
 		}
-		//delete[] arr;
 		break;
 	case 3:
 		generateFile();
 		break;
 	case 4:
 		analyseFile();
+		break;
+	default:
+		cout << "Invalid input." << endl;
 		break;
 	}
 }
@@ -107,36 +122,29 @@ void PasswordManager::createUser(string username, string password) {
 
 }
 
-bool PasswordManager::checkUser(string username) {
+vector<string> PasswordManager::checkUser(string username) {
 	string line;
 	ifstream file("password.txt");
+	vector<string> subs;
 	while (getline(file, line)) {
 		if (line.find(username, 0) != string::npos) {
-			int attempts = 3;
-			string inputPwd;
-			while (attempts > 0) {
-				cout << "Please enter your password." << endl;
-				cin.ignore();
-				getline(cin, inputPwd);
-				unsigned char* arr = new unsigned char[password.length() + 1];
-				strcpy_s((char*)arr, password.length() + 1, password.c_str());
-				if (encryptPassword(input))
-			}
+			subs = split(line);
 		} 
 		else {
 			cout << "Failure. Incorrect username.";
 		}
-	//	cout << line << endl;
-		/*if (username == line)
-			if (password == line)
-				return true;*/
 	}
-	return 0;	
+	return subs;
 }
 
-vector<string> split(string line, char delim = ' ') {
+vector<string> PasswordManager::split(string line, char delim) {
 	vector<string> result;
-
+	istringstream iss(line);
+	string s;
+	while (getline(iss, s, ' ')) {
+		result.push_back(s);
+	}
+	return result;
 }
 
 bool PasswordManager::generateFile() {
@@ -276,6 +284,7 @@ void PasswordManager::analyseFile() {
 		length++;
 	}
 	cout << "No. of password cracked: " << crackCount << endl;
+	cout << (crackCount / 100) * 100 << "% of passwords cracked" << endl;
 	
 }
 
@@ -290,7 +299,7 @@ string PasswordManager::encryptPassword(unsigned char* pwd) {
 	return encryptedPwd;
 }
 
-int PasswordManager::collatzEncrypt(int n) {
+inline int PasswordManager::collatzEncrypt(int n) {
 	int steps = 0;
 	while (n != 1) {
 		n = (n % 2 == 0) ? n / 2 : 3 * n + 1;
