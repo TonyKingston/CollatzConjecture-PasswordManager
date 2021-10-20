@@ -12,7 +12,7 @@ public:
 	~PasswordManager();
 	void start();
 	void createUser(string username, string password);
-	bool checkUser(string username, string password);
+	bool checkUser(string username);
 	bool generateFile();
 	void analyseFile();
 	string encryptPassword(unsigned char* pwd);

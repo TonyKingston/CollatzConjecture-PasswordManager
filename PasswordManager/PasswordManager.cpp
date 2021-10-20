@@ -58,9 +58,12 @@ void PasswordManager::start() {
 	switch (option) {
 	case 1:
 		cout << "Please enter a username" << endl;
-		cin >> username;
+		cin.ignore();
+		getline(cin, username);
+		username.erase(remove(username.begin(), username.end(), ' '), username.end());
 		cout << "Please enter a password" << endl;
-		cin >> password;
+		getline(cin, password);
+		cout << password.length();
 		arr = new unsigned char[password.length() + 1];
 		strcpy_s((char*)arr, password.length() + 1, password.c_str());
 		encryptedPassword = encryptPassword(arr);
@@ -70,14 +73,17 @@ void PasswordManager::start() {
 		break;
 	case 2:
 		cout << "Please enter a username" << endl;
-		cin >> username;
-		cout << "Please enter a password" << endl;
+		cin.ignore();
+		getline(cin, username);
+		/*cout << "Please enter a password" << endl;
 		cin >> password;
 		arr = new unsigned char[password.length() + 1];
 		strcpy_s((char*)arr, password.length() + 1, password.c_str());
-		encryptedPassword = encryptPassword(arr);
-		checkUser(username, encryptedPassword);
-		delete[] arr;
+		encryptedPassword = encryptPassword(arr);*/
+		if (checkUser(username)) {
+			int attempts;
+		}
+		//delete[] arr;
 		break;
 	case 3:
 		generateFile();
@@ -101,16 +107,36 @@ void PasswordManager::createUser(string username, string password) {
 
 }
 
-bool PasswordManager::checkUser(string username, string password) {
+bool PasswordManager::checkUser(string username) {
 	string line;
 	ifstream file("password.txt");
 	while (getline(file, line)) {
-		cout << line << endl;
+		if (line.find(username, 0) != string::npos) {
+			int attempts = 3;
+			string inputPwd;
+			while (attempts > 0) {
+				cout << "Please enter your password." << endl;
+				cin.ignore();
+				getline(cin, inputPwd);
+				unsigned char* arr = new unsigned char[password.length() + 1];
+				strcpy_s((char*)arr, password.length() + 1, password.c_str());
+				if (encryptPassword(input))
+			}
+		} 
+		else {
+			cout << "Failure. Incorrect username.";
+		}
+	//	cout << line << endl;
 		/*if (username == line)
 			if (password == line)
 				return true;*/
 	}
 	return 0;	
+}
+
+vector<string> split(string line, char delim = ' ') {
+	vector<string> result;
+
 }
 
 bool PasswordManager::generateFile() {
@@ -257,15 +283,9 @@ string PasswordManager::encryptPassword(unsigned char* pwd) {
 	int offset = 0;
 	string encryptedPwd;
 	for (int i = 0; pwd[i] != '\0'; i++) {
-		int steps = 0;
 		int n = int(pwd[i]) + offset;
-		while (n != 1) {
-			n = (n % 2 == 0) ? n / 2 : 3 * n + 1;
-			steps++;
-		}
-		offset = steps;
-		encryptedPwd = encryptedPwd + to_string(steps);
-		//collatzEncrypt(pwd[i] + offset);
+		offset = collatzEncrypt(n);
+		encryptedPwd = encryptedPwd + to_string(offset);
 	}
 	return encryptedPwd;
 }
