@@ -10,6 +10,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <map>
+#include <unordered_map>
 #include <sstream>
 
 using namespace std;
@@ -159,8 +160,8 @@ bool PasswordManager::generateFile() {
 	int length = 1;
 	int count = 0;
 	if (file.is_open()) {
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 10; j++) {
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
 				unsigned char* str = new unsigned char[length + 1];
 				//shared_ptr<unsigned char> str(new unsigned char[length]);
 
@@ -197,8 +198,10 @@ void PasswordManager::analyseFile() {
 	int crackCount = 0;
 	unsigned char* guess;
 	int offset;
-	for (int i = 0; i < 10; i++) {
-		for (int j = 0; j < 10; j++) {
+	int c = 0;
+	for (int i = 0; i < 100; i++) {
+		for (int j = 0; j < 100; j++) {
+			c++;
 
 		//	guess = new unsigned char[length + 1];
 		//	guess[length] = '\0';
@@ -206,7 +209,8 @@ void PasswordManager::analyseFile() {
 			getline(file, line);
 
 			if (length == 1) {
-				if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) {
+				//if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) 
+				if (to_string(collatzEncrypt(collatzMap[line][0])) == line) {
 					crackCount++;
 				}
 			}
@@ -217,11 +221,36 @@ void PasswordManager::analyseFile() {
 				root.depth = 0;
 				Node* currentNode = &root;
 			//	unique_ptr<Node> currentNode = make_unique<Node>(root);
+				/*if (line == "1233103264667106523628904436153328108114127127109131081147031413641362310834") {
+					passwordTree(currentNode, line, length);
+					deleteTree(currentNode);
+					currentNode = NULL;
+				}*/
 				passwordTree(currentNode, line, length);
-				//getValidStringSet(Node * root);
 				deleteTree(currentNode);
 				currentNode = NULL;
-	
+				cout << c << " " << length << endl;
+				cout << line << endl;
+			/*	if (length == 20) {
+					passwordTree(currentNode, line, length);
+					deleteTree(currentNode);
+					currentNode = NULL;
+				}*/
+				
+			//	Node* guess = getValidStringSet(currentNode, length);
+				//Node* guess;
+			/*	if (currentNode->children.size() > 0) {
+					for (auto node : currentNode->children) {
+						if (node->children.size() > 0) {
+							currentNode = node;
+						}
+					}
+					if (currentNode->depth == length) {
+						guess = currentNode;
+					}
+				}*/
+				
+				
 				
 			}
 			/*int subCount = 0;
@@ -269,7 +298,7 @@ void PasswordManager::passwordTree(Node* currentNode, string line) {
 		for (int y = 1; y < 4 && y <= line.length(); y++) {
 			sub = line.substr(0, y);
 			//	sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
-			if (collatzMap.find(stoi(sub)) != collatzMap.end()) {
+			if (collatzMap.find(sub) != collatzMap.end()) {
 				Node* newNode = new Node(sub);
 				newNode->parent = currentNode;
 				newNode->depth = currentNode->depth + 1;
@@ -288,10 +317,14 @@ void PasswordManager::passwordTree(Node* currentNode, string line, int subCount)
 	do {
 		string sub;
 		if (line == "" || currentNode->depth == subCount) return;
+		//|| (subCount - currentNode->depth)
+		// We know from the collatz map that y will not be more than 3 digits
 		for (int y = 1; y < 4 && y <= line.length(); y++) {
 			y = (currentNode->depth == subCount - 1) ? line.length() : y;
 			sub = line.substr(0, y);
-			if (collatzMap.find(stoi(sub)) != collatzMap.end()) {
+			if (sub.rfind("0", 0)) return;
+			// sub could be a large integer, stoi using stoi will cause memory range error so it checks the number of digits
+			if (sub.length() < 4 &&  collatzMap.find(sub) != collatzMap.end()) {
 				Node* newNode = new Node(sub);
 				newNode->parent = currentNode;
 				newNode->depth = currentNode->depth + 1;
@@ -307,15 +340,14 @@ void PasswordManager::passwordTree(Node* currentNode, string line, int subCount)
 	} while (currentNode->children.size() == 0 && valid);
 }
 
-string getValidStringSet(Node* root) {
-	/*string s = root->value;
+void PasswordManager::getValidStringSet(Node* root, int subCount) {
 	if (root->children.size() > 0) {
-		for (auto& node : currentNode->children) {
-			if (s.length + node->length() < )
-			s += node->value;
+		for (auto node : root->children) {
+			getValidStringSet(node, subCount);
 		}
-	}*/
-	return "hello";
+	}
+	if (root->depth == subCount);
+//	return root->parent;
 }
 
 
@@ -329,7 +361,6 @@ void PasswordManager::deleteTree(Node* root) {
 	
 	root = NULL;
 }
-
 
 /*void PasswordManager::analyseFile() {
 	string line;
@@ -512,8 +543,8 @@ inline int PasswordManager::collatzEncrypt(int n) {
 	return steps;
 }
 
-map<int, vector<int> > PasswordManager::createCollatzMap() {
-	map<int, vector<int>> map;
+/*unordered_map<int, vector<int> > PasswordManager::createCollatzMap() {
+	unordered_map<int, vector<int>> map;
 	for (int i = 32; i < 255; i++) {
 		int steps = collatzEncrypt(i);
 		auto it = map.find(steps);
@@ -521,6 +552,23 @@ map<int, vector<int> > PasswordManager::createCollatzMap() {
 			vector<int> numbers;
 			numbers.push_back(i);
 			map.insert({ steps, numbers });
+		}
+		else {
+			map[it->first].push_back(i);
+		}
+	}
+	return map;
+}*/
+
+unordered_map<string, vector<int> > PasswordManager::createCollatzMap() {
+	unordered_map<string, vector<int>> map;
+	for (int i = 32; i < 255; i++) {
+		int steps = collatzEncrypt(i);
+		auto it = map.find(to_string(steps));
+		if (it == map.end()) {
+			vector<int> numbers;
+			numbers.push_back(i);
+			map.insert({ to_string(steps), numbers });
 		}
 		else {
 			map[it->first].push_back(i);

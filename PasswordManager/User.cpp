@@ -1,4 +1,5 @@
 #include "User.h"
+#include <iostream>
 
 User::User(string name, string pwd) {
 	username = name;

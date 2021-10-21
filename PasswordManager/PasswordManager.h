@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -34,14 +35,16 @@ public:
 	void analyseFile();
 	string encryptPassword(unsigned char* pwd);
 	inline int collatzEncrypt(int n);
-	map<int, vector<int>> createCollatzMap();
+	//unordered_map<int, vector<int>> createCollatzMap();
+	unordered_map<string, vector<int>> createCollatzMap();
 
 
 private:
 	void passwordTree(Node* node, string line);
 	void passwordTree(Node* node, string line, int subCount);
 	void deleteTree(Node* root);
-	string getValidStringSet(Node* root);
-	map<int, vector<int>> collatzMap;
+	void getValidStringSet(Node* root, int subCount);
+	//unordered_map<int, vector<int>> collatzMap;
+	unordered_map<string, vector<int>> collatzMap;
 };
 
