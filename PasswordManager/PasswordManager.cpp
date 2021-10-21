@@ -200,8 +200,8 @@ void PasswordManager::analyseFile() {
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 10; j++) {
 
-			guess = new unsigned char[length + 1];
-			guess[length] = '\0';
+		//	guess = new unsigned char[length + 1];
+		//	guess[length] = '\0';
 			offset = 0;
 			getline(file, line);
 
@@ -216,9 +216,12 @@ void PasswordManager::analyseFile() {
 				root.length = 0;
 				root.depth = 0;
 				Node* currentNode = &root;
-				passwordTree(currentNode, line);
-				deleteTree(&root);
-				int t;
+			//	unique_ptr<Node> currentNode = make_unique<Node>(root);
+				passwordTree(currentNode, line, length);
+				//getValidStringSet(Node * root);
+				deleteTree(currentNode);
+				currentNode = NULL;
+	
 				
 			}
 			/*int subCount = 0;
@@ -254,7 +257,7 @@ void PasswordManager::analyseFile() {
 				}
 			}*/
 		}
-		delete[] guess;
+		//delete[] guess;
 		length++;
 	}
 }
@@ -274,18 +277,56 @@ void PasswordManager::passwordTree(Node* currentNode, string line) {
 				currentNode->children.push_back(newNode);
 			}
 		}
-		for (auto node : currentNode->children) {
+		for (auto& node : currentNode->children) {
 			passwordTree(node, line.substr(node->value.length(), line.length()));
 		}
 	} while (currentNode->children.size() == 0);
 }
+
+void PasswordManager::passwordTree(Node* currentNode, string line, int subCount) {
+	bool valid = true;
+	do {
+		string sub;
+		if (line == "" || currentNode->depth == subCount) return;
+		for (int y = 1; y < 4 && y <= line.length(); y++) {
+			y = (currentNode->depth == subCount - 1) ? line.length() : y;
+			sub = line.substr(0, y);
+			if (collatzMap.find(stoi(sub)) != collatzMap.end()) {
+				Node* newNode = new Node(sub);
+				newNode->parent = currentNode;
+				newNode->depth = currentNode->depth + 1;
+				newNode->length = currentNode->length + sub.length();
+				currentNode->children.push_back(newNode);
+			}
+			
+		}
+		valid = !valid;
+		for (auto& node : currentNode->children) {
+			passwordTree(node, line.substr(node->value.length(), line.length()), subCount);
+		}
+	} while (currentNode->children.size() == 0 && valid);
+}
+
+string getValidStringSet(Node* root) {
+	/*string s = root->value;
+	if (root->children.size() > 0) {
+		for (auto& node : currentNode->children) {
+			if (s.length + node->length() < )
+			s += node->value;
+		}
+	}*/
+	return "hello";
+}
+
 
 void PasswordManager::deleteTree(Node* root) {
 	if (root == NULL) return;
 	for (auto node : root->children) {
 		deleteTree(node);
 	}
+	if (root->parent == NULL) return;
 	delete root;
+	
 	root = NULL;
 }
 

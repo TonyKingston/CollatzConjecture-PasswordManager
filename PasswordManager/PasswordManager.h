@@ -15,6 +15,9 @@ struct Node {
 	Node(string value) {
 		this->value = value;
 	}
+
+ //   Node(const Node&) = delete;
+	//Node& operator=(const Node&) = delete;
 };
 
 
@@ -36,7 +39,9 @@ public:
 
 private:
 	void passwordTree(Node* node, string line);
+	void passwordTree(Node* node, string line, int subCount);
 	void deleteTree(Node* root);
+	string getValidStringSet(Node* root);
 	map<int, vector<int>> collatzMap;
 };
 
