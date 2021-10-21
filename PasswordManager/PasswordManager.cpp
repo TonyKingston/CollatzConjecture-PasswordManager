@@ -199,6 +199,106 @@ void PasswordManager::analyseFile() {
 	int offset;
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 10; j++) {
+
+			guess = new unsigned char[length + 1];
+			guess[length] = '\0';
+			offset = 0;
+			getline(file, line);
+
+			if (length == 1) {
+				if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) {
+					crackCount++;
+				}
+			}
+			else {
+				Node root = Node(line);
+				root.parent = NULL;
+				root.length = 0;
+				root.depth = 0;
+				Node* currentNode = &root;
+				passwordTree(currentNode, line);
+				deleteTree(&root);
+				int t;
+				
+			}
+			/*int subCount = 0;
+			do {
+				string sub;
+				subCount++;
+				for (int y = currentNode->length; y  < currentNode->length + 4; y++) {
+					sub = line.substr(currentNode->length, y);
+					//	sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
+					if (collatzMap.find(stoi(sub)) != collatzMap.end()) {
+						Node* newNode = new Node(sub);
+						newNode->parent = currentNode;
+						newNode->depth = subCount;
+						newNode->length = currentNode->length + sub.length();
+						currentNode->children.push_back(newNode);
+					}
+				}
+				
+			} while (currentNode->children.size() > 0);*/
+			/*for (int x = 0; x < line.length(); x++) {
+				string sub;
+				subCount++;
+				for (int y = x; y < 4; y++) {
+					sub = line.substr(x, y);
+				//	sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
+					if (collatzMap.find(stoi(sub)) != collatzMap.end()) {
+						Node* newNode = new Node(sub);
+						newNode->parent = currentNode;
+						newNode->depth = subCount;
+						newNode->length = currentNode->length + sub.length();
+						currentNode->children.push_back(newNode);
+					}
+				}
+			}*/
+		}
+		delete[] guess;
+		length++;
+	}
+}
+
+void PasswordManager::passwordTree(Node* currentNode, string line) {
+	do {
+		string sub;
+		if (line == "") return;
+		for (int y = 1; y < 4 && y <= line.length(); y++) {
+			sub = line.substr(0, y);
+			//	sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
+			if (collatzMap.find(stoi(sub)) != collatzMap.end()) {
+				Node* newNode = new Node(sub);
+				newNode->parent = currentNode;
+				newNode->depth = currentNode->depth + 1;
+				newNode->length = currentNode->length + sub.length();
+				currentNode->children.push_back(newNode);
+			}
+		}
+		for (auto node : currentNode->children) {
+			passwordTree(node, line.substr(node->value.length(), line.length()));
+		}
+	} while (currentNode->children.size() == 0);
+}
+
+void PasswordManager::deleteTree(Node* root) {
+	if (root == NULL) return;
+	for (auto node : root->children) {
+		deleteTree(node);
+	}
+	delete root;
+	root = NULL;
+}
+
+
+/*void PasswordManager::analyseFile() {
+	string line;
+	ifstream file("passwordtest.txt");
+	int length = 1;
+	int crackCount = 0;
+	unsigned char* guess;
+	int offset;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
 			guess = new unsigned char[length + 1];
 			guess[length] = '\0';
 			offset = 0;
@@ -250,9 +350,9 @@ void PasswordManager::analyseFile() {
 		delete[] guess;
 		length++;
 	}
-}
+}*/
 
-void PasswordManager::analyseFile() {
+/*void PasswordManager::analyseFile() {
 	string line;
 	ifstream file("passwordtest.txt");
 	int length = 1;
@@ -295,7 +395,7 @@ void PasswordManager::analyseFile() {
 				/*	if (collatzMap.find(stoi(sub)) == collatzMap.end()) {
 
 						}*/
-					}
+				/*	}
 					else {
 						sub = line.substr(totalChars, sublength);
 					}
@@ -326,12 +426,12 @@ void PasswordManager::analyseFile() {
 						
 						//g = it->second[0] - offset;
 						offset = steps;
-					}
+					}*/
 					/*else if(it != collatzMap.end()) {
 						
 						crackCount += (encryptPassword(guess) == line) ? 1 : 0;
 					}*/
-					previousSub = sub;
+	/*				previousSub = sub;
 				}
 				guess = start;
 				for (int y = 0; y < length; y++) {
@@ -349,7 +449,7 @@ void PasswordManager::analyseFile() {
 	cout << "No. of password cracked: " << crackCount << endl;
 	cout << (crackCount / 100) * 100 << "% of passwords cracked" << endl;
 	
-}
+}*/
 
 string PasswordManager::encryptPassword(unsigned char* pwd) {
 	int offset = 0;

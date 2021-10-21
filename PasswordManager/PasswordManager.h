@@ -5,6 +5,19 @@
 
 using namespace std;
 
+struct Node {
+	string value;
+	Node* parent;
+	vector<Node*> children;
+	int depth;
+	int length;
+
+	Node(string value) {
+		this->value = value;
+	}
+};
+
+
 class PasswordManager
 {
 public:
@@ -22,6 +35,8 @@ public:
 
 
 private:
+	void passwordTree(Node* node, string line);
+	void deleteTree(Node* root);
 	map<int, vector<int>> collatzMap;
 };
 
