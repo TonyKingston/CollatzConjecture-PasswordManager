@@ -322,7 +322,9 @@ void PasswordManager::passwordTree(Node* currentNode, string line, int subCount)
 		for (int y = 1; y < 4 && y <= line.length(); y++) {
 			y = (currentNode->depth == subCount - 1) ? line.length() : y;
 			sub = line.substr(0, y);
-			if (sub.rfind("0", 0)) return;
+			if (sub[0] == '0') {
+				return;
+			}
 			// sub could be a large integer, stoi using stoi will cause memory range error so it checks the number of digits
 			if (sub.length() < 4 &&  collatzMap.find(sub) != collatzMap.end()) {
 				Node* newNode = new Node(sub);
