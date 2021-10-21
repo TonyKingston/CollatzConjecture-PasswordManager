@@ -12,6 +12,8 @@
 #include <map>
 #include <unordered_map>
 #include <sstream>
+#include "PasswordTree.h"
+#include <ctime>
 
 using namespace std;
 
@@ -160,8 +162,8 @@ bool PasswordManager::generateFile() {
 	int length = 1;
 	int count = 0;
 	if (file.is_open()) {
-		for (int i = 0; i < 100; i++) {
-			for (int j = 0; j < 100; j++) {
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
 				unsigned char* str = new unsigned char[length + 1];
 				//shared_ptr<unsigned char> str(new unsigned char[length]);
 
@@ -173,6 +175,31 @@ bool PasswordManager::generateFile() {
 				for (int x = 0; x < length; x++) {
 					//str[x] = distribution(generator);
 					str[x] = *random_select(letterSet.begin(), letterSet.end());
+					cout << char(str[x]);
+				}
+				cout << endl;
+				//cout << rand_str << endl;
+				string encryptedPassword = encryptPassword(str);
+				file << encryptedPassword << endl;
+				count++;
+				delete[] str;
+			}
+			length++;
+		}
+		length = 1;
+		
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				unsigned char* str = new unsigned char[length + 1];
+
+				str[length] = '\0';
+				/*string rand_str(length, '\0');
+				for (char& dis : rand_str)
+					dis = distribution2(generator);*/
+
+				for (int x = 0; x < length; x++) {
+					str[x] = distribution(generator);
+					//str[x] = *random_select(letterSet.begin(), letterSet.end());
 					cout << char(str[x]);
 				}
 				cout << endl;
@@ -196,16 +223,23 @@ void PasswordManager::analyseFile() {
 	ifstream file("passwordtest.txt");
 	int length = 1;
 	int crackCount = 0;
+	int c1totalCount = 0;
+	int c2totalCount = 0;
+	double c1duration = 0;
+	double c2duration = 0;
 	unsigned char* guess;
-	int offset;
 	int c = 0;
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
+	for (int i = 0; i < 20; i++) {
+		length = (i == 10) ? 1 : length;
+		double duration = 0;
+		crackCount = 0;
+		for (int j = 0; j < 10; j++) {
+			guess = new unsigned char[length + 1];
+			guess[length] = '\0';
 			c++;
 
-		//	guess = new unsigned char[length + 1];
-		//	guess[length] = '\0';
-			offset = 0;
+			
+			//offset = 0;
 			getline(file, line);
 
 			if (length == 1) {
@@ -220,37 +254,56 @@ void PasswordManager::analyseFile() {
 				root.length = 0;
 				root.depth = 0;
 				Node* currentNode = &root;
-			//	unique_ptr<Node> currentNode = make_unique<Node>(root);
-				/*if (line == "1233103264667106523628904436153328108114127127109131081147031413641362310834") {
-					passwordTree(currentNode, line, length);
+			//	string test = "1233103264667106523628904436153328108114127127109131081147031413641362310834";
+				string test = "1233103114391032110313113";
+				/*if (line == test) {
+					cout << test.length() << endl;
+					cout << test.length() * length << endl;
+					PasswordTree tree = PasswordTree(this);
+					tree.generateTree(currentNode, line, length);
 					deleteTree(currentNode);
 					currentNode = NULL;
 				}*/
-				passwordTree(currentNode, line, length);
-				deleteTree(currentNode);
-				currentNode = NULL;
-				cout << c << " " << length << endl;
-				cout << line << endl;
-			/*	if (length == 20) {
-					passwordTree(currentNode, line, length);
+
+			/*	if (length == 100) {
+					PasswordTree tree = PasswordTree(this);
+					tree.generateTree(currentNode, line, length);
 					deleteTree(currentNode);
 					currentNode = NULL;
+					cout << c << " " << length << endl;
+					cout << line << endl;
 				}*/
 				
-			//	Node* guess = getValidStringSet(currentNode, length);
-				//Node* guess;
-			/*	if (currentNode->children.size() > 0) {
-					for (auto node : currentNode->children) {
-						if (node->children.size() > 0) {
-							currentNode = node;
+				unsigned char* start = guess;
+				if (line == "106111212123") {
+				//	cout << "hello";
+				}
+				PasswordTree tree = PasswordTree(this, currentNode);
+				clock_t timer;
+				timer = clock();
+				tree.generateTree(currentNode, line, length);
+				vector<string> strings = tree.getValidStringSet();
+				reverse(strings.begin(), strings.end());
+				int offset = 0;
+				for (auto s : strings) {
+					for (int y = 0; y < collatzMap[s].size(); y++) {
+						if (collatzMap[s][y] - offset > 0) {
+						//	cout << collatzMap[s][y];
+							*guess = collatzMap[s][y] - offset;
+							break;
 						}
 					}
-					if (currentNode->depth == length) {
-						guess = currentNode;
-					}
-				}*/
-				
-				
+					offset = stoi(s);
+					guess++;
+				}
+				guess = start;
+				crackCount += (encryptPassword(guess) == line) ? 1 : 0;
+				duration += (std::clock() - timer) / (double)CLOCKS_PER_SEC;
+				deleteTree(currentNode);
+				currentNode = NULL;
+			//	string t = encryptPassword(guess);
+				//cout << crackCount << endl;
+				//cout << c << endl;
 				
 			}
 			/*int subCount = 0;
@@ -286,9 +339,30 @@ void PasswordManager::analyseFile() {
 				}
 			}*/
 		}
-		//delete[] guess;
+		delete[] guess;
+		if (i >= 10) {
+			cout << "Category 2: " << (crackCount * 100) / 10 << "% of passwords cracked for " << length << " long password" << endl;
+			cout << "Category 2: " << "Average duration taken " << duration / 10 << endl;
+			c2totalCount += crackCount;
+			c2duration += duration;
+		}
+		else {
+			cout << "Category 1: " << (crackCount * 100) / 10 << "% of passwords cracked for " << length << " long password" << endl;
+			cout << "Category 1: " << "Average duration taken " << duration / 10 << endl;
+			c1totalCount += crackCount;
+			c1duration += duration;
+		}
 		length++;
+		
 	}
+
+	cout << "\nCategory 1: Total No. of password cracked: " << c1totalCount << endl;
+	cout << (c1totalCount * 100) / 100 << "% of passwords cracked" << endl;
+	cout << "Total duration " << c1duration << endl;
+	cout << "Category 2: Total No. of password cracked: " << c2totalCount << endl;
+	cout << (c2totalCount * 100) / 100 << "% of passwords cracked" << endl;
+	cout << "Total duration " << c2duration << endl;
+
 }
 
 void PasswordManager::passwordTree(Node* currentNode, string line) {
@@ -364,167 +438,6 @@ void PasswordManager::deleteTree(Node* root) {
 	root = NULL;
 }
 
-/*void PasswordManager::analyseFile() {
-	string line;
-	ifstream file("passwordtest.txt");
-	int length = 1;
-	int crackCount = 0;
-	unsigned char* guess;
-	int offset;
-	for (int i = 0; i < 10; i++) {
-		for (int j = 0; j < 10; j++) {
-			guess = new unsigned char[length + 1];
-			guess[length] = '\0';
-			offset = 0;
-			getline(file, line);
-			if (line == "1135249") {
-				cout << line << endl;
-			}
-
-			if (length == 1) {
-				if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) {
-					crackCount++;
-				}
-			}
-			else {
-				unsigned char* start = guess;
-				// Find first valid substring of password
-				//TODO: If sublength count < length - 1, break because combination isn't possible;
-				int sublength;
-				int steps = 0;
-				int substringCount = 0;
-				int totalChars = 0;
-				vector<string> subs;
-				string previousSub;
-				//for (int totalChars = 0; totalChars < line.length();) {
-				while (totalChars < line.length()) {
-					sublength = 1;
-					string sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
-					sublength = sub.length();
-					auto it = collatzMap.find(stoi(sub));
-					if ((totalChars + sublength) <= line.length()) {
-						while (collatzMap.find(stoi(sub)) == collatzMap.end() && (totalChars + sublength) <= line.length()) {
-							sublength++;
-							sub = line.substr(totalChars, sublength);
-							it = collatzMap.find(stoi(sub));
-						}
-						subs.emplace_back(sub);
-						steps = it->first;
-						substringCount++;
-						totalChars += sub.length();
-						int d = it->second[0] - offset;
-						*guess = it->second[0] - offset;
-						guess++;
-						offset = steps;
-					}
-					previousSub = sub;
-				}
-			}
-		}
-		delete[] guess;
-		length++;
-	}
-}*/
-
-/*void PasswordManager::analyseFile() {
-	string line;
-	ifstream file("passwordtest.txt");
-	int length = 1;
-	int crackCount = 0;
-	unsigned char* guess;
-	int offset;
-	for (int i = 0; i < 10; i++) {
-		for (int j = 0; j < 10; j++) {
-			guess = new unsigned char[length + 1];
-			guess[length] = '\0';
-			offset = 0;
-			getline(file, line);
-			if (line == "1135249") {
-				cout << line << endl;
-			}
-			
-			
-			if (length == 1) {
-				if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) {
-					crackCount++;
-				}
-			}
-			else {
-				unsigned char* start = guess;
-				// Find first valid substring of password
-				//TODO: If sublength count < length - 1, break because combination isn't possible;
-				int sublength;
-				int steps = 0;
-				int substringCount = 0;
-				int totalChars = 0;
-				string previousSub;
-				//for (int totalChars = 0; totalChars < line.length();) {
-				while (totalChars < line.length()) {
-					sublength = 1;
-					//string sub;
-					string sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
-					
-					if (substringCount == length - 1) {
-						sub = line.substr(totalChars, line.length() - totalChars);
-				/*	if (collatzMap.find(stoi(sub)) == collatzMap.end()) {
-
-						}*/
-				/*	}
-					else {
-						sub = line.substr(totalChars, sublength);
-					}
-					sublength = sub.length();
-					auto it = collatzMap.find(stoi(sub));
-					if ((totalChars + sublength) <= line.length()) {
-						while (it == collatzMap.end()) {
-							if (sub.length() >= 3) {
-								sub = line.substr(totalChars - previousSub.length(), previousSub.length() + 1);
-								it = collatzMap.find(stoi(sub));
-								//if (it == collatzMap.end()) {
-									//backtrack;
-								//}
-								substringCount--;
-								totalChars -= previousSub.length();
-								break;
-							}
-							sublength++;
-							sub = line.substr(totalChars, sublength);
-							it = collatzMap.find(stoi(sub));
-						}
-						steps = it->first;
-						substringCount++;
-						totalChars += sub.length();
-						int d = it->second[0] - offset;
-						*guess = it->second[0] - offset;
-						guess++;
-						
-						//g = it->second[0] - offset;
-						offset = steps;
-					}*/
-					/*else if(it != collatzMap.end()) {
-						
-						crackCount += (encryptPassword(guess) == line) ? 1 : 0;
-					}*/
-	/*				previousSub = sub;
-				}
-				guess = start;
-				for (int y = 0; y < length; y++) {
-					cout << guess[y];
-				}
-				cout << endl;
-				crackCount += (encryptPassword(guess) == line) ? 1 : 0;
-
-			}
-			
-		}
-		delete[] guess; 
-		length++;
-	}
-	cout << "No. of password cracked: " << crackCount << endl;
-	cout << (crackCount / 100) * 100 << "% of passwords cracked" << endl;
-	
-}*/
-
 string PasswordManager::encryptPassword(unsigned char* pwd) {
 	int offset = 0;
 	string encryptedPwd;
@@ -562,9 +475,9 @@ inline int PasswordManager::collatzEncrypt(int n) {
 	return map;
 }*/
 
-unordered_map<string, vector<int> > PasswordManager::createCollatzMap() {
-	unordered_map<string, vector<int>> map;
-	for (int i = 32; i < 255; i++) {
+map<string, vector<int> > PasswordManager::createCollatzMap() {
+	map<string, vector<int>> map;
+	for (int i = 1; i <= 255 + 127; i++) {
 		int steps = collatzEncrypt(i);
 		auto it = map.find(to_string(steps));
 		if (it == map.end()) {
@@ -612,6 +525,106 @@ unordered_map<string, vector<int> > PasswordManager::createCollatzMap() {
 		}
 		collatzEncrypt(n);
 	}*/
+
+
+	/*void PasswordManager::analyseFile() {
+		string line;
+		ifstream file("passwordtest.txt");
+		int length = 1;
+		int crackCount = 0;
+		unsigned char* guess;
+		int offset;
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				guess = new unsigned char[length + 1];
+				guess[length] = '\0';
+				offset = 0;
+				getline(file, line);
+				if (line == "1135249") {
+					cout << line << endl;
+				}
+
+
+				if (length == 1) {
+					if (to_string(collatzEncrypt(collatzMap[stoi(line)][0])) == line) {
+						crackCount++;
+					}
+				}
+				else {
+					unsigned char* start = guess;
+					// Find first valid substring of password
+					//TODO: If sublength count < length - 1, break because combination isn't possible;
+					int sublength;
+					int steps = 0;
+					int substringCount = 0;
+					int totalChars = 0;
+					string previousSub;
+					//for (int totalChars = 0; totalChars < line.length();) {
+					while (totalChars < line.length()) {
+						sublength = 1;
+						//string sub;
+						string sub = (substringCount == length - 1) ? line.substr(totalChars, line.length() - totalChars) : line.substr(totalChars, sublength);
+
+						if (substringCount == length - 1) {
+							sub = line.substr(totalChars, line.length() - totalChars);
+					/*	if (collatzMap.find(stoi(sub)) == collatzMap.end()) {
+
+							}*/
+							/*	}
+								else {
+									sub = line.substr(totalChars, sublength);
+								}
+								sublength = sub.length();
+								auto it = collatzMap.find(stoi(sub));
+								if ((totalChars + sublength) <= line.length()) {
+									while (it == collatzMap.end()) {
+										if (sub.length() >= 3) {
+											sub = line.substr(totalChars - previousSub.length(), previousSub.length() + 1);
+											it = collatzMap.find(stoi(sub));
+											//if (it == collatzMap.end()) {
+												//backtrack;
+											//}
+											substringCount--;
+											totalChars -= previousSub.length();
+											break;
+										}
+										sublength++;
+										sub = line.substr(totalChars, sublength);
+										it = collatzMap.find(stoi(sub));
+									}
+									steps = it->first;
+									substringCount++;
+									totalChars += sub.length();
+									int d = it->second[0] - offset;
+									*guess = it->second[0] - offset;
+									guess++;
+
+									//g = it->second[0] - offset;
+									offset = steps;
+								}*/
+								/*else if(it != collatzMap.end()) {
+
+									crackCount += (encryptPassword(guess) == line) ? 1 : 0;
+								}*/
+								/*				previousSub = sub;
+											}
+											guess = start;
+											for (int y = 0; y < length; y++) {
+												cout << guess[y];
+											}
+											cout << endl;
+											crackCount += (encryptPassword(guess) == line) ? 1 : 0;
+
+										}
+
+									}
+									delete[] guess;
+									length++;
+								}
+								cout << "No. of password cracked: " << crackCount << endl;
+								cout << (crackCount / 100) * 100 << "% of passwords cracked" << endl;
+
+							}*/
 
 
 
