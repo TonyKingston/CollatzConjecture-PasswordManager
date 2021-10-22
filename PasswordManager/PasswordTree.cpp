@@ -1,8 +1,8 @@
 #include "PasswordTree.h"
 
-PasswordTree::PasswordTree(PasswordManager* manager, Node* root) {
+PasswordTree::PasswordTree(PasswordManager* manager, Node* root) : Tree(root) {
 	collatzMap = &manager->collatzMap;
-	this->root = root;
+	//this->root = root;
 	finalString = NULL;
 }
 
@@ -26,7 +26,7 @@ void PasswordTree::generateTree(Node* currentNode, string line, int subCount) {
 		}*/
 		//|| (subCount - currentNode->depth)
 		// We know from the collatz map that y will not be more than 3 digits
-		for (int y = 1; y < 4 && y <= line.length(); y++) {
+		for (int y = 1; y < MAX_DIGITS && y <= line.length(); y++) {
 			y = (currentNode->depth == subCount - 1) ? line.length() : y;
 			sub = line.substr(0, y);
 			if (sub[0] == '0') {
@@ -34,7 +34,7 @@ void PasswordTree::generateTree(Node* currentNode, string line, int subCount) {
 			}
 			auto it = collatzMap->find(sub);
 			// sub could be a large integer, stoi using stoi will cause memory range error so it checks the number of digits
-			if (sub.length() < 4 && it != collatzMap->end()) {
+			if (sub.length() < MAX_DIGITS && it != collatzMap->end()) {
 			//	int count = 0;
 				Node* newNode = new Node(sub);
 				newNode->parent = currentNode;
@@ -54,9 +54,22 @@ void PasswordTree::generateTree(Node* currentNode, string line, int subCount) {
 
 		}
 		valid = !valid;
-		for (auto& node : currentNode->children) {
-			generateTree(node, line.substr(node->value.length(), line.length()), subCount);
+		// Be greedy
+		if (currentNode->children.size() >= 1) {
+			int z = currentNode->children.size() - 1;
+			while (z >= 0) {
+				generateTree(currentNode->children[z], line.substr(currentNode->children[z]->value.length(), line.length()), subCount);
+				z--;
+			}
 		}
+		else {
+			for (auto& node : currentNode->children) {
+				generateTree(node, line.substr(node->value.length(), line.length()), subCount);
+			}
+		}
+		/*for (auto& node : currentNode->children) {
+			generateTree(node, line.substr(node->value.length(), line.length()), subCount);
+		}*/
 	}
 }
 
@@ -71,7 +84,6 @@ vector<string> PasswordTree::getValidStringSet() {
 	}
 	return substrings;
 }
-
 /*void PasswordTree::generateTree(Node* currentNode, string line, int subCount) {
 	bool valid = true;
 	do {
@@ -113,3 +125,4 @@ vector<string> PasswordTree::getValidStringSet() {
 		}
 	} while (currentNode->children.size() == 0 && valid);
 }*/
+

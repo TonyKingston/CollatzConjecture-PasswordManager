@@ -3,26 +3,19 @@
 #include <map>
 #include <vector>
 #include <unordered_map>
-#include "PasswordManager.h"
 #include "PasswordTree.h"
+#include <exception>
 
 using namespace std;
 
-/*struct Node {
-	string value;
-	Node* parent;
-	vector<Node*> children;
-	int depth;
-	int length;
 
-	Node(string value) {
-		this->value = value;
+struct FileNotFound : public exception
+{
+	const char* what() const throw ()
+	{
+		return "File not found";
 	}
-
- //   Node(const Node&) = delete;
-	//Node& operator=(const Node&) = delete;
-};*/
-
+};
 
 class PasswordManager
 {
@@ -38,14 +31,17 @@ public:
 	string encryptPassword(unsigned char* pwd);
 	inline int collatzEncrypt(int n);
 	//unordered_map<int, vector<int>> createCollatzMap();
-	map<string, vector<int>> createCollatzMap();
+	map<string, vector<int>> createCollatzMap(int lower, int upper);
 	map<string, vector<int>> collatzMap;
+	
 
 private:
 	void passwordTree(Node* node, string line);
 	void passwordTree(Node* node, string line, int subCount);
 	void deleteTree(Node* root);
 	void getValidStringSet(Node* root, int subCount);
+	void menu();
+	void decryptSentence();
 	//unordered_map<int, vector<int>> collatzMap;
 };
 

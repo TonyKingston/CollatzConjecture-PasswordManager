@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "Node.h"
 #include "PasswordManager.h"
+#include "Tree.h"
 
 using namespace std;
 
@@ -21,16 +22,16 @@ using namespace std;
 
 class PasswordManager;
 
-class PasswordTree
+class PasswordTree : public Tree
 {
 public:
-	PasswordTree(Node* root, string line, int subcount);
+	//PasswordTree(Node* root, string line, int subcount);
 	PasswordTree(PasswordManager* manager, Node* root);
 	void generateTree(Node* root, string line, int subcount);
 	vector<string> getValidStringSet();
 private:
-	Node* root;
 	Node* finalString;
 	map<string, vector<int>>* collatzMap;
+	const int MAX_DIGITS = 4;
 };
 
